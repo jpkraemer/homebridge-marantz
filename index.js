@@ -31,16 +31,31 @@ function MarantzAccessory(log, config) {
   this.commandURL = "http://" + this.ip + '/MainZone/index.put.asp'; 
 }
 
-MarantzAccessory.prototype.setState = function(powerOn, callback) {
-  var accessory = this; 
-  var state = powerOn ? 'ON' : 'OFF';
+MarantzAccessory.prototype.getState = function(callback) {
+  request(this.statusURL, function (error, response, body) {
+    if (error) {
+      accessory.log('Error: ' + error); 
+      callback(error); 
+    } else {
+      xml2js.parseString(body, callback);
+    }
+  });
+}
 
+MarantzAccessory.prototype.setState = function(command, callback) {
   request.post({
     url: this.commandURL,
     form: {
-      cmd0: 'PutZone_OnOff/' + state
+      cmd0: command
     }
-  }, function (error, res, body) {
+  }, callback);  
+}
+
+MarantzAccessory.prototype.setOnOffState = function(powerOn, callback) {
+  var accessory = this; 
+  var state = powerOn ? 'ON' : 'OFF';
+
+  this.setState('PutZone_OnOff/' + state, function(error){
     if (error) {
       accessory.log('Error: ' + error); 
       callback(error);
@@ -51,24 +66,84 @@ MarantzAccessory.prototype.setState = function(powerOn, callback) {
   });  
 }
 
-MarantzAccessory.prototype.getState = function(callback) {
+MarantzAccessory.prototype.getOnOffState = function(callback) {
   var accessory = this; 
 
-  request(this.statusURL, function (error, response, body) {
+  accessory.getState(function (err, result) {
+    if (err) {
+      accessory.log('Error: ' + err); 
+      callback(err); 
+    } else {
+      var state = result.item.ZonePower[0].value[0]; 
+      accessory.log('State of ' + accessory.name + ' is: ' + state); 
+      callback(null, (state === "ON")); 
+    }
+  });
+}
+
+MarantzAccessory.prototype.setMuteState = function (mute, callback) {
+  this.getMuteState(function(err, currentState) {
+    if (err) {
+      accessory.log('Error: ' + error); 
+      callback(error);
+    } else {
+      if (mute !== currentState) {
+        this.setState('PutVolumeMute/TOGGLE', function (err) {
+          if (err) {
+            accessory.log('Error: ' + error); 
+            callback(error);
+          } else {
+            accessory.log('Set ' + accessory.name + ' mute to ' + mute); 
+            callback(null); 
+          }
+        });
+      }
+    }
+  });
+}
+
+MarantzAccessory.prototype.getMuteState = function (callback) {
+  var accessory = this; 
+
+  accessory.getState(function (err, result) {
+    if (err) {
+      accessory.log('Error: ' + err); 
+      callback(err); 
+    } else {
+      var state = result.item.Mute[0].value[0]; 
+      accessory.log('State of ' + accessory.name + ' is: ' + state); 
+      callback(null, (state === "on")); 
+    }
+  });
+}
+
+MarantzAccessory.prototype.setVolume = function (volume, callback) {
+  var accessory = this; 
+  var state = volume - 80; 
+
+  this.setState('PutMasterVolumeSet/' + state, function(error){
     if (error) {
       accessory.log('Error: ' + error); 
-      callback(error); 
+      callback(error);
     } else {
-      xml2js.parseString(body, function (err, result) {
-        if (err) {
-          accessory.log('Error: ' + err); 
-          callback(err); 
-        } else {
-          var state = result.item.ZonePower[0].value[0]; 
-          accessory.log('State of ' + accessory.name + ' is: ' + state); 
-          callback(null, (state === "ON")); 
-        }
-      });
+      accessory.log('Set ' + accessory.name + ' volume to ' + state); 
+      callback(null); 
+    }
+  });  
+}
+
+MarantzAccessory.prototype.getVolume = function (callback) {
+  var accessory = this; 
+
+  accessory.getState(function (err, result) {
+    if (err) {
+      accessory.log('Error: ' + err); 
+      callback(err); 
+    } else {
+      var state = result.item.MasterVolume[0].value[0]; 
+      var volume = parseInt(state) + 80; 
+      accessory.log('State of ' + accessory.name + ' volume is: ' + volume); 
+      callback(null, volume); 
     }
   });
 }
@@ -76,9 +151,19 @@ MarantzAccessory.prototype.getState = function(callback) {
 MarantzAccessory.prototype.getServices = function() {
   var switchService = new Service.Switch(); 
 
-  var characteristic = switchService.getCharacteristic(Characteristic.On);
-  characteristic.on('set', this.setState.bind(this)); 
-  characteristic.on('get', this.getState.bind(this)); 
+  switchService.getCharacteristic(Characteristic.On)
+  .on('set', this.setOnOffState.bind(this))
+  .on('get', this.getOnOffState.bind(this));
 
-  return [switchService]; 
+  var speakerService = new Service.Speaker(); 
+
+  speakerService.getCharacteristic(Characteristic.Mute)
+  .on('set', this.setMuteState.bind(this))
+  .on('get', this.getMuteState.bind(this));
+
+  speakerService.getCharacteristic(Characteristic.Volume)
+  .on('set', this.setVolume.bind(this))
+  .on('get', this.getVolume.bind(this));
+
+  return [switchService, speakerService]; 
 }
