@@ -149,6 +149,7 @@ MarantzAccessory.prototype.getVolume = function (callback) {
 }
 
 MarantzAccessory.prototype.getServices = function() {
+  this.log("Marantz Services Added");
   var switchService = new Service.Switch(); 
 
   switchService.getCharacteristic(Characteristic.On)
