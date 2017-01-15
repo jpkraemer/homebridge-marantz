@@ -16,10 +16,10 @@ module.exports = function(homebridge) {
   
   // For platform plugin to be considered as dynamic platform plugin,
   // registerPlatform(pluginName, platformName, constructor, dynamic), dynamic must be true
-  homebridge.registerPlatform("homebridge-marantzPlatform", "MarantzPlatform", MarantzPlatform, true);
+  homebridge.registerAccessory("homebridge-marantz", "Marantz", MarantzAccessory);
 }
 
-function MarantzPlatform(log, config) {
+function MarantzAccessory(log, config) {
   log("MarantzPlatform Init"); 
 
   this.log = log; 
@@ -31,7 +31,7 @@ function MarantzPlatform(log, config) {
   this.commandURL = "http://" + ip + '/MainZone/index.put.asp'; 
 }
 
-MarantzPlatform.prototype.setState = function(powerOn, callback) {
+MarantzAccessory.prototype.setState = function(powerOn, callback) {
   var accessory = this; 
   var state = powerOn ? 'ON' : 'OFF';
 
@@ -51,7 +51,7 @@ MarantzPlatform.prototype.setState = function(powerOn, callback) {
   });  
 }
 
-MarantzPlatform.prototype.getState = function(callback) {
+MarantzAccessory.prototype.getState = function(callback) {
   var accessory = this; 
 
   request(this.statusURL, function (error, response, body) {
@@ -73,7 +73,7 @@ MarantzPlatform.prototype.getState = function(callback) {
   });
 }
 
-MarantzPlatform.prototype.getServices = function() {
+MarantzAccessory.prototype.getServices = function() {
   var switchService = new Service.Switch(); 
 
   var characteristic = switchService.getCharacteristic(characteristic.On);
