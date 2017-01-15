@@ -161,7 +161,7 @@ MarantzAccessory.prototype.getServices = function() {
   .on('set', this.setMuteState.bind(this))
   .on('get', this.getMuteState.bind(this));
 
-  speakerService.getCharacteristic(Characteristic.Volume)
+  speakerService.addCharacteristic(Characteristic.Volume)
   .on('set', this.setVolume.bind(this))
   .on('get', this.getVolume.bind(this));
 
