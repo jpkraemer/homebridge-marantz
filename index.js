@@ -55,7 +55,7 @@ MarantzAccessory.prototype.setOnOffState = function(powerOn, callback) {
   var accessory = this; 
   var state = powerOn ? 'ON' : 'OFF';
 
-  this.setState('PutZone_OnOff/' + state, function(error){
+  accessory.setState('PutZone_OnOff/' + state, function(error){
     if (error) {
       accessory.log('Error: ' + error); 
       callback(error);
@@ -82,13 +82,14 @@ MarantzAccessory.prototype.getOnOffState = function(callback) {
 }
 
 MarantzAccessory.prototype.setMuteState = function (mute, callback) {
-  this.getMuteState(function(err, currentState) {
+  var accessory = this; 
+  accessory.getMuteState(function(err, currentState) {
     if (err) {
       accessory.log('Error: ' + error); 
       callback(error);
     } else {
       if (mute !== currentState) {
-        this.setState('PutVolumeMute/TOGGLE', function (err) {
+        accessory.setState('PutVolumeMute/TOGGLE', function (err) {
           if (err) {
             accessory.log('Error: ' + error); 
             callback(error);
