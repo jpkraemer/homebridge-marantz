@@ -27,8 +27,8 @@ function MarantzAccessory(log, config) {
   this.accessories = []; 
 
   this.ip = config['ip']; 
-  this.statusURL = "http://" + ip + '/goform/formMainZone_MainZoneXml.xml'; 
-  this.commandURL = "http://" + ip + '/MainZone/index.put.asp'; 
+  this.statusURL = "http://" + this.ip + '/goform/formMainZone_MainZoneXml.xml'; 
+  this.commandURL = "http://" + this.ip + '/MainZone/index.put.asp'; 
 }
 
 MarantzAccessory.prototype.setState = function(powerOn, callback) {
