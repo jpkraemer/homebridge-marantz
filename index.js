@@ -76,7 +76,7 @@ MarantzAccessory.prototype.getState = function(callback) {
 MarantzAccessory.prototype.getServices = function() {
   var switchService = new Service.Switch(); 
 
-  var characteristic = switchService.getCharacteristic(characteristic.On);
+  var characteristic = switchService.getCharacteristic(Characteristic.On);
   characteristic.on('set', this.setState.bind(this)); 
   characteristic.on('get', this.getState.bind(this)); 
 
