@@ -24,7 +24,7 @@ function MarantzAccessory(log, config) {
 
   this.log = log; 
   this.config = config; 
-  this.accessories = []; 
+  this.name = config['name']; 
 
   this.ip = config['ip']; 
   this.statusURL = "http://" + this.ip + '/goform/formMainZone_MainZoneXml.xml'; 
@@ -64,7 +64,7 @@ MarantzAccessory.prototype.getState = function(callback) {
           accessory.log('Error: ' + err); 
           callback(err); 
         } else {
-          var state = result.item.ZonePower.value; 
+          var state = result.item.ZonePower[0].value[0]; 
           accessory.log('State of ' + accessory.name + ' is: ' + state); 
           callback(null, state); 
         }
