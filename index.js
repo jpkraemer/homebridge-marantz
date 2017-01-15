@@ -64,7 +64,7 @@ MarantzAccessory.prototype.getState = function(callback) {
           accessory.log('Error: ' + err); 
           callback(err); 
         } else {
-          var state = results.item.ZonePower.value; 
+          var state = result.item.ZonePower.value; 
           accessory.log('State of ' + accessory.name + ' is: ' + state); 
           callback(null, state); 
         }
